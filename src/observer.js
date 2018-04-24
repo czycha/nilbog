@@ -2,6 +2,10 @@ import uid from 'uid'
 
 const MO = window.MutationObserver || window.WebkitMutationObserver
 
+if (!Element.prototype.matches) {
+  Element.prototype.matches = Element.prototype.msMatchesSelector;
+}
+
 /**
  * Check if element matches selector.
  * @param {Element} el
@@ -16,7 +20,13 @@ function matches (el, selector) {
       el.msMatchesSelector ||
       el.mozMatchesSelector ||
       el.webkitMatchesSelector ||
-      el.oMatchesSelector
+      el.oMatchesSelector ||
+      function(s) {
+        const matches = (this.document || this.ownerDocument).querySelectorAll(s)
+        let i = matches.length
+        while (--i >= 0 && matches.item(i) !== this) {}
+        return i > -1            
+      }
     )(selector)
   } else if (Element.prototype.isPrototypeOf(selector)) {
     return el === selector
