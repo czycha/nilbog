@@ -13,6 +13,7 @@
 	- [Protect text](#protect-text)
 	- [Protect attributes](#protect-attributes)
 	- [Protect classes](#protect-classes)
+	- [Freeze](#freeze)
 - [Name](#name)
 - [See also](#see-also)
 - [License](#license)
@@ -205,6 +206,10 @@ nilbog.protectClasses('#protect-classes--mix-match', {
   }
 })
 ```
+
+### <a id="freeze"></a>nilbog.freeze(selector, options = {})
+
+Shortcut that runs `preventDelete`, `protectText`, `protectClasses`, and `protectAttributes` on the same `selector`.
 
 ## Name
 
