@@ -1,3 +1,6 @@
-src/test.js
-browser/test.js
-index.html
+test/
+docs/
+Gulpfile.babel.js
+.*
+*.log
+src/

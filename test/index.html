@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Test | Nilbog</title>
+		<style>
+			div:not(.deep) {
+				padding-bottom: 1em;
+				border-bottom: 1px solid #aeaeae;
+				margin-bottom: 1em;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="deep">
+			<div class="deep">
+				<div class="prevent-delete">Prevent delete: before sibling</div>
+				<div class="prevent-delete prevent-create">Prevent delete/create conflict: does nothing</div>
+				<div class="protect-text">Protect text <span>[Inner]</span> Protect text</div>
+			</div>
+			<div class="prevent-delete">Prevent delete: after sibling</div>
+		</div>
+		<div class="deep">
+			<div class="prevent-delete">Prevent delete: alone</div>
+		</div>
+		<div id="protect-classes--default" class="protect-classes class-a class-b class-c">
+			Protect classes: default<br/>
+			<em>Prevent:</em><br/>
+			<ul>
+				<li>creation</li>
+				<li>deletion</li>
+			</ul>
+		</div>
+		<div id="protect-classes--allow-most" class="protect-classes class-a class-b class-c">
+			Protect classes: allow all with exceptions<br/>
+			<em>Prevent:</em><br/>
+			<ul>
+				<li>creation: class-d</li>
+				<li>deletion: class-a</li>
+			</ul>
+		</div>
+		<div id="protect-classes--prevent-most" class="protect-classes class-a class-b class-c">
+			Protect classes: prevent all with exceptions<br/>
+			<em>Allow:</em><br/>
+			<ul>
+				<li>creation: class-b, class-d</li>
+				<li>deletion: class-a, class-b</li>
+			</ul>
+		</div>
+		<div id="protect-classes--conflict" class="protect-classes class-a class-b class-c">
+			Protect classes: conflict<br/>
+			<em>Observer 1 prevents:</em>
+			<ul>
+				<li>creation: <em>class-d</em>, class-e</li>
+				<li>deletion: <em>class-a</em></li>
+			</ul>
+			<em>Observer 2 prevents:</em>
+			<ul>
+				<li>creation: <em>class-d</em>, class-f</li>
+				<li>deletion: <em>class-a</em>, class-b</li>
+			</ul>
+		</div>
+		<div class="protect-attributes--default" attr1="attr1" attr2="attr2" attr3="attr3">
+			Protect attributes: default<br/>
+			<em>Prevent:</em><br/>
+			<ul>
+				<li>creation</li>
+				<li>deletion</li>
+				<li>modification</li>
+			</ul>
+		</div>
+		<div class="protect-attributes--allow-most" attr1="attr1" attr2="attr2" attr3="attr3">
+			Protect attributes: allow all with exceptions<br/>
+			<em>Prevent:</em><br/>
+			<ul>
+				<li>creation: attr4</li>
+				<li>deletion: attr1</li>
+				<li>modification: attr2</li>
+			</ul>
+		</div>
+		<div class="protect-attributes--prevent-most" attr1="attr1" attr2="attr2" attr3="attr3">
+			Protect attributes: prevent all with exceptions<br/>
+			<em>Allow:</em><br/>
+			<ul>
+				<li>creation: attr3, attr4</li>
+				<li>deletion: attr1, attr3</li>
+				<li>modification: attr2</li>
+			</ul>
+		</div>
+		<div class="protect-attributes--conflict" attr1="attr1" attr2="attr2" attr3="attr3">
+			Protect attributes: conflict<br/>
+			<em>Observer 1 prevents:</em><br/>
+			<ul>
+				<li>creation: <em>attr4</em>, attr5</li>
+				<li>deletion: <em>attr1</em></li>
+				<li>modification: <em>attr2</em></li>
+			</ul>
+			<em>Observer 2 prevents:</em><br/>
+			<ul>
+				<li>creation: <em>attr4</em>, attr6</li>
+				<li>deletion: <em>attr1</em>, attr2</li>
+				<li>modification: <em>attr2</em></li>
+			</ul>
+		</div>
+		<div class="freeze class-a class-b class-c" attr1="attr1" attr2="attr2" attr3="attr3">Freeze</div>
+		<script type="text/javascript" src="./browser.min.js"></script>
+	</body>
+</html>

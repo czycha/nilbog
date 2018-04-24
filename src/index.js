@@ -1,6 +1,47 @@
-import { matches, handleList } from './utils'
 import Observer from './observer'
-import ActionManager from './actions'
+import ConflictManager from './conflicts'
+import Referee from './referee'
+
+/**
+ * @typedef {Object} VennDiagram - Inclusive and exclusive elements between two arrays.
+ * @property {Array} left - Items exclusive to the left argument
+ * @property {Array} right - Items exclusive to the right argument
+ * @property {Array} middle - Items shared between the two
+ */
+
+/**
+ * Creates a Venn diagram showing the inclusive/exclusive elements of two arrays.
+ * @param {Array} left
+ * @param {Array} right
+ * @returns {VennDiagram}
+ */
+function venn (left, right) {
+  return {
+    left: left.filter((a) => !right.includes(a)),
+    right: right.filter((a) => !left.includes(a)),
+    middle: left.filter((a) => right.includes(a))
+  }
+}
+
+/**
+ * @typedef {Object} BinaryDiff - What is added or removed. No modification.
+ * @property {Array} added
+ * @property {Array} removed
+ */
+
+/**
+ * Find what was added or removed.
+ * @param {Array} newArr
+ * @param {Array} oldArr
+ * @return {BinaryDiff}
+ */
+function arrDiff (oldArr, newArr) {
+  const { left: added, right: removed } = venn(newArr, oldArr)
+  return {
+    added,
+    removed
+  }
+}
 
 /**
  * Element selector or element list or list of selectors
@@ -9,156 +50,201 @@ import ActionManager from './actions'
 
 /**
  * Trickster class that reverts changes.
- * @note Be aware of infinite loops if you have multiple Nilbogs assigned to the same elements and tasks.
- * @namespace
  */
-const Nilbog = {
+class Nilbog {
   /**
-   * Checks if actions are in conflict
+   * @param {boolean} [safe=true] - Keeps a record of all observers to ensure that they don't create feedback loops.
    */
-  actionManager: new ActionManager(),
+  constructor (safe = true) {
+    /**
+     * Keep a record of all observers to ensure that they don't create feedback loops.
+     * @member {boolean}
+     */
+    this.safe = safe
+
+    /**
+     * Helps resolve conflicts between multiple observers. If `this.safe` is false, will not do anything.
+     * @member {ConflictManager}
+     */
+    this.conflictManager = new ConflictManager(!this.safe)
+  }
+
   /**
    * Prevent creation of certain elements.
    * @param {selector} selector
-   * @param {Object} options
-   * @param {boolean} [subtree=true] - Operate on tree
-   * @param {Element} [parent=document.documentElement] - Parent to observe on.
-   * @return {MutationObserver}
+   * @param {Object} [options]
+   * @param {boolean} [options.subtree=true] - Operate on tree
+   * @param {Element} [options.parent=document.documentElement] - Parent to observe on.
+   * @return {Observer}
    */
   preventCreate (selector, {subtree = true, parent = document.documentElement} = {}) {
-    const actionManager = this.actionManager
+    const conflictManager = this.conflictManager
     const params = { childList: true, subtree }
-    const observer = new Observer(parent, params, function (records) {
+    const observer = new Observer(selector, parent, params, function (records) {
       records.forEach(({ addedNodes }) => {
         addedNodes.forEach((node) => {
-          if (matches(node, selector) && actionManager.take('preventCreate', node, this.uid)) {
+          if (this.matches(node) && conflictManager.resolve('preventCreate', this, node)) {
             node.remove()
           }
         })
       })
     })
-    actionManager.register('preventCreate', observer.uid, selector, parent)
+    conflictManager.register('preventCreate', observer)
     observer.connect()
     return observer
-  },
+  }
 
   /**
    * Prevent modification inner text.
    * @param {selector} selector
-   * @param {Object} options
-   * @param {boolean} [subtree=true] - Operate on tree
-   * @param {Element} [parent=document.documentElement] - Parent to observe on.
-   * @return {MutationObserver}
+   * @param {Object} [options]
+   * @param {boolean} [options.subtree=true] - Operate on tree
+   * @param {Element} [options.parent=document.documentElement] - Parent to observe on.
+   * @return {Observer}
    */
   protectText (selector, {subtree = true, parent = document.documentElement} = {}) {
-    const actionManager = this.actionManager
+    const conflictManager = this.conflictManager
     const params = { characterData: true, characterDataOldValue: true, subtree: subtree }
-    const observer = new Observer(parent, params, function (records) {
+    const observer = new Observer(selector, parent, params, function (records) {
       records.forEach(({ type, target, oldValue }) => {
-        if (type === 'characterData' && matches(target.parentNode, selector) && actionManager.take('protectText', target.parentNode, this.uid)) {
+        if (type === 'characterData' && this.matches(target.parentNode) && conflictManager.resolve('protectText', this, target.parentNode)) {
           this.operate(() => {
             target.data = oldValue
           })
         }
       })
     })
-    actionManager.register('protectText', observer.uid, selector, parent)
+    conflictManager.register('protectText', observer)
     observer.connect()
     return observer
-  },
+  }
 
   /**
    * Prevent modification of attributes.
    * @param {selector} selector
-   * @param {Object} options
-   * @param {boolean} [subtree=true] - Operate on tree
-   * @param {Element} [parent=document.documentElement] - Parent to observe on.
-   * @param {list} [attributes=true] - List of attributes to protect. If `true`, all attributes are protected.
-   * @return {MutationObserver}
+   * @param {Object} [options]
+   * @param {boolean} [options.subtree=true] - Operate on tree
+   * @param {Element} [options.parent=document.documentElement] - Parent to observe on.
+   * @param {APRules} [options.rules]
+   * @return {Observer}
    */
-  protectAttributes (selector, {subtree = true, parent = document.documentElement, attributes = true} = {}) {
-    const actionManager = this.actionManager
-    const attributeFilter = handleList(attributes)
+  protectAttributes (selector, {
+    subtree = true,
+    parent = document.documentElement,
+    rules = { prevent: true, allow: false }
+  } = {}) {
+    const conflictManager = this.conflictManager
+    const allow = Referee.normalize(rules.allow)
+    const prevent = Referee.normalize(rules.prevent)
+    const attributeFilter = Referee.filter({ allow, prevent })
     const params = {
       attributes: true,
       attributeOldValue: true,
       subtree,
-      attributeFilter: attributeFilter || undefined
+      attributeFilter
     }
-    const observer = new Observer(parent, params, function (records) {
+    const observer = new Observer(selector, parent, params, function (records) {
       records.forEach(({ attributeName, target, oldValue }) => {
-        if (matches(target, selector) && attributeName !== 'class' && actionManager.take('protectAttributes', target, this.uid)) {
-          this.operate(() => {
-            if (oldValue !== null) {
-              target.setAttribute(attributeName, oldValue)
-            } else {
-              target.removeAttribute(attributeName)
-            }
-          })
+        if (this.matches(target) && attributeName !== 'class') {
+          const changed = { added: [], removed: [], modified: [] }
+          let undoThis
+          if (oldValue === null) {
+            changed.added.push(attributeName)
+            undoThis = 'create'
+          } else if (!target.hasAttribute(attributeName)) {
+            changed.removed.push(attributeName)
+            undoThis = 'delete'
+          } else if (oldValue !== target.getAttribute(attributeName)) {
+            changed.modified.push(attributeName)
+            undoThis = 'modify'
+          } else {
+            return false
+          }
+          let undo = Referee.deliberate({ allow, prevent }, changed)
+          const resolution = conflictManager.resolve('protectAttributes', this, target, undo)
+          if (resolution !== true) undo = resolution
+          if (undo[undoThis].length === 1) {
+            this.operate(() => {
+              switch (undoThis) {
+                case 'create':
+                  target.removeAttribute(attributeName)
+                  break
+                case 'delete':
+                case 'modify':
+                  target.setAttribute(attributeName, oldValue)
+                  break
+              }
+            })
+          }
         }
       })
-    })
-    actionManager.register('protectAttributes', observer.uid, selector, parent)
+    }, { allow, prevent })
+    conflictManager.register('protectAttributes', observer)
     observer.connect()
     return observer
-  },
+  }
 
   /**
    * Prevent modification of classes.
-   * @param {selector} selector
-   * @param {Object} options
-   * @param {boolean} [subtree=true] - Operate on tree
-   * @param {Element} [parent=document.documentElement] - Parent to observe on.
-   * @param {list} [always=true] - List of classes that need to always be present. If `true`, all current classes are protected. If `false`, no current classes are protected.
-   * @param {list} [prevent=true] - List of classes that are not allowed to be added. If `true`, no classes can be added. If `false`, classes can be added.
-   * @return {MutationObserver}
+   * @param {selector} selector - Suggested to not be a class.
+   * @param {Object} [options]
+   * @param {boolean} [options.subtree=true] - Operate on tree
+   * @param {Element} [options.parent=document.documentElement] - Parent to observe on.
+   * @param {APRules} [options.rules]
+   * @return {Observer}
    */
-  protectClasses (selector, {subtree = true, parent = document.documentElement, always = true, prevent = true} = {}) {
-    const actionManager = this.actionManager
-    const alwaysClassList = handleList(always)
-    const preventClassList = handleList(prevent)
+  protectClasses (selector, {
+    subtree = true,
+    parent = document.documentElement,
+    rules = { prevent: true, allow: false }
+  } = {}) {
+    const conflictManager = this.conflictManager
+    const allow = Referee.normalize(rules.allow)
+    const prevent = Referee.normalize(rules.prevent)
     const params = {
       attributes: true,
       attributeOldValue: true,
       subtree,
       attributeFilter: ['class']
     }
-    const observer = new Observer(parent, params, function (records) {
+    const observer = new Observer(selector, parent, params, function (records) {
       records.forEach(({ attributeName, target, oldValue }) => {
-        if (matches(target, selector) && actionManager.take('protectClasses', target, this.uid)) {
+        if (this.matches(target)) {
           const newClasses = target.getAttribute('class').split(' ').filter(className => className !== '')
           const oldClasses = oldValue.split(' ').filter(className => className !== '')
-          const remove = newClasses.filter((className) => (!oldClasses.includes(className) && (prevent || preventClassList.includes(className))))
-          const add = oldClasses.filter((className) => (!newClasses.includes(className) && (always || alwaysClassList.includes(className))))
-          if (remove.length > 0 || add.length > 0) {
-            const classes = [...newClasses.filter((className) => !remove.includes(className)), ...add].join(' ')
+          const changed = arrDiff(oldClasses, newClasses)
+          let undo = Referee.deliberate({ allow, prevent }, changed)
+          const resolution = conflictManager.resolve('protectClasses', this, target, undo)
+          if (resolution !== true) undo = resolution
+          if (undo.delete.length > 0 || undo.create.length > 0) {
+            const classes = [...newClasses.filter((className) => !undo.create.includes(className)), ...undo.delete].join(' ')
             this.operate(() => {
               target.setAttribute('class', classes)
             })
           }
         }
       })
-    })
-    actionManager.register('protectClasses', observer.uid, selector, parent)
+    }, { allow, prevent })
+    conflictManager.register('protectClasses', observer)
     observer.connect()
     return observer
-  },
+  }
 
   /**
    * Prevent deletion of certain elements.
    * @param {selector} selector
-   * @param {Object} options
-   * @param {boolean} [subtree=true] - Operate on tree
-   * @param {Element} [parent=document.documentElement] - Parent to observe on.
-   * @return {MutationObserver}
+   * @param {Object} [options]
+   * @param {boolean} [options.subtree=true] - Operate on tree
+   * @param {Element} [options.parent=document.documentElement] - Parent to observe on.
+   * @return {Observer}
    */
   preventDelete (selector, {subtree = true, parent = document.documentElement} = {}) {
-    const actionManager = this.actionManager
+    const conflictManager = this.conflictManager
     const params = { childList: true, subtree }
-    const observer = new Observer(parent, params, function (records) {
+    const observer = new Observer(selector, parent, params, function (records) {
       records.forEach(({ removedNodes, target, nextSibling, previousSibling }) => {
         removedNodes.forEach((node) => {
-          if (matches(node, selector) && actionManager.take('preventDelete', target, this.uid)) {
+          if (this.matches(node) && conflictManager.resolve('preventDelete', this, node)) {
             if (!nextSibling && !previousSibling) {
               target.appendChild(node)
             } else if (nextSibling) {
@@ -170,18 +256,18 @@ const Nilbog = {
         })
       })
     })
-    actionManager.register('preventDelete', observer.uid, selector, parent)
+    conflictManager.register('preventDelete', observer)
     observer.connect()
     return observer
-  },
+  }
 
   /**
    * Protect the element on all fronts.
    * @param {selector} selector
-   * @param {Object} options
-   * @return {Object<MutationObserver>}
+   * @param {Object} [options]
+   * @return {Object<Observer>}
    */
-  all (...args) {
+  freeze (...args) {
     return {
       protectText: this.protectText(...args),
       preventDelete: this.preventDelete(...args),
