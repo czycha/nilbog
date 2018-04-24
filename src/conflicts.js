@@ -6,7 +6,7 @@ import Referee from './referee'
  * @param {Element} el2
  * @return {boolean}
  */
-function elementsAreRelated(el1, el2) {
+function elementsAreRelated (el1, el2) {
   return el1 === el2 || el1.contains(el2) || el2.contains(el1)
 }
 

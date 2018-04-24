@@ -73,13 +73,12 @@ class Nilbog {
    * Prevent creation of certain elements.
    * @param {selector} selector
    * @param {Object} [options]
-   * @param {boolean} [options.subtree=true] - Operate on tree
    * @param {Element} [options.parent=document.documentElement] - Parent to observe on.
    * @return {Observer}
    */
-  preventCreate (selector, {subtree = true, parent = document.documentElement} = {}) {
+  preventCreate (selector, {parent = document.documentElement} = {}) {
     const conflictManager = this.conflictManager
-    const params = { childList: true, subtree }
+    const params = { childList: true, subtree: true }
     const observer = new Observer(selector, parent, params, function (records) {
       records.forEach(({ addedNodes }) => {
         addedNodes.forEach((node) => {
@@ -98,13 +97,12 @@ class Nilbog {
    * Prevent modification inner text.
    * @param {selector} selector
    * @param {Object} [options]
-   * @param {boolean} [options.subtree=true] - Operate on tree
    * @param {Element} [options.parent=document.documentElement] - Parent to observe on.
    * @return {Observer}
    */
-  protectText (selector, {subtree = true, parent = document.documentElement} = {}) {
+  protectText (selector, {parent = document.documentElement} = {}) {
     const conflictManager = this.conflictManager
-    const params = { characterData: true, characterDataOldValue: true, subtree: subtree }
+    const params = { characterData: true, characterDataOldValue: true, subtree: true }
     const observer = new Observer(selector, parent, params, function (records) {
       records.forEach(({ type, target, oldValue }) => {
         if (type === 'characterData' && this.matches(target.parentNode) && conflictManager.resolve('protectText', this, target.parentNode)) {
@@ -123,13 +121,11 @@ class Nilbog {
    * Prevent modification of attributes.
    * @param {selector} selector
    * @param {Object} [options]
-   * @param {boolean} [options.subtree=true] - Operate on tree
    * @param {Element} [options.parent=document.documentElement] - Parent to observe on.
    * @param {APRules} [options.rules]
    * @return {Observer}
    */
   protectAttributes (selector, {
-    subtree = true,
     parent = document.documentElement,
     rules = { prevent: true, allow: false }
   } = {}) {
@@ -140,7 +136,7 @@ class Nilbog {
     const params = {
       attributes: true,
       attributeOldValue: true,
-      subtree,
+      subtree: true,
       attributeFilter
     }
     const observer = new Observer(selector, parent, params, function (records) {
@@ -188,13 +184,11 @@ class Nilbog {
    * Prevent modification of classes.
    * @param {selector} selector - Suggested to not be a class.
    * @param {Object} [options]
-   * @param {boolean} [options.subtree=true] - Operate on tree
    * @param {Element} [options.parent=document.documentElement] - Parent to observe on.
    * @param {APRules} [options.rules]
    * @return {Observer}
    */
   protectClasses (selector, {
-    subtree = true,
     parent = document.documentElement,
     rules = { prevent: true, allow: false }
   } = {}) {
@@ -204,7 +198,7 @@ class Nilbog {
     const params = {
       attributes: true,
       attributeOldValue: true,
-      subtree,
+      subtree: true,
       attributeFilter: ['class']
     }
     const observer = new Observer(selector, parent, params, function (records) {
@@ -234,13 +228,12 @@ class Nilbog {
    * Prevent deletion of certain elements.
    * @param {selector} selector
    * @param {Object} [options]
-   * @param {boolean} [options.subtree=true] - Operate on tree
    * @param {Element} [options.parent=document.documentElement] - Parent to observe on.
    * @return {Observer}
    */
-  preventDelete (selector, {subtree = true, parent = document.documentElement} = {}) {
+  preventDelete (selector, {parent = document.documentElement} = {}) {
     const conflictManager = this.conflictManager
-    const params = { childList: true, subtree }
+    const params = { childList: true, subtree: true }
     const observer = new Observer(selector, parent, params, function (records) {
       records.forEach(({ removedNodes, target, nextSibling, previousSibling }) => {
         removedNodes.forEach((node) => {
