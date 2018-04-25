@@ -238,6 +238,7 @@ class Nilbog {
     const conflictManager = this.conflictManager
     const params = { childList: true, subtree: true }
     const observer = new Observer(selector, parent, params, function (records) {
+      const resolve = (node) => conflictManager.resolve('preventDelete', this, node)
       records.forEach(({ removedNodes, target, nextSibling, previousSibling }) => {
         const placeNode = (node) => {
           if (!nextSibling && !previousSibling) {
@@ -251,10 +252,12 @@ class Nilbog {
         removedNodes.forEach((node) => {
           let collection
           if (this.matches(node)) { // Direct deletion
-            if (conflictManager.resolve('preventDelete', this, node)) { placeNode(node) }
+            if (resolve(node)) {
+              placeNode(node)
+            }
           } else if (
             onTreeDeletion &&
-            (collection = this.containsMatches(node).filter((n) => conflictManager.resolve('preventDelete', this, n))).length > 0
+            (collection = this.containsMatches(node).filter(resolve)).length > 0
           ) {
             switch (onTreeDeletion) {
               case 'place-at-top-level':
