@@ -152,27 +152,17 @@ class Observer {
 
   /**
    * Suspend observing to operate on the elements. This prevents your action from being reverted.
-   * @param {function|Promise} fn - Bound to Observer.
-   * @return {?Promise<boolean>}
+   * @param {function} fn - Bound to Observer.
+   * @return {*} - Returns whatever `fn` returns
    */
   operate (fn) {
     if (this.connected) {
-      if (typeof fn === 'function') {
-        this.disconnect()
-        this::fn()
-        this.connect()
-      } else if (Promise.prototype.isPrototypeOf(fn)) {
-        return Promise.resolve(this.disconnect())
-          .then(() => this::fn())
-          .finally(() => Promise.resolve(this.connect()))
-      }
+      this.disconnect()
+      const f = this::fn()
+      this.connect()
+      return f
     } else {
-      if (typeof fn === 'function') {
-        this::fn()
-      } else if (Promise.prototype.isPrototypeOf(fn)) {
-        return Promise.resolve(this::fn())
-          .finally(() => Promise.resolve(true))
-      }
+      return this::fn()
     }
   }
 }
