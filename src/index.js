@@ -231,7 +231,7 @@ class Nilbog {
    * @param {Object} [options]
    * @param {Element} [options.parent=document.documentElement] - Parent to observe on.
    * @param {string} [options.onTreeDeletion=false] - What to do when tree containing matched element is deleted.
-   *   Options: false (do nothing) | "recreate-direct-path" | "recreate-full-tree" | "place-at-top-level" 
+   *   Options: false (do nothing) | "recreate-direct-path" | "recreate-full-tree" | "place-at-top-level"
    * @return {Observer}
    */
   preventDelete (selector, {parent = document.documentElement, onTreeDeletion = false} = {}) {
@@ -250,34 +250,33 @@ class Nilbog {
         }
         removedNodes.forEach((node) => {
           let collection
-          if (this.matches(node)) {  // Direct deletion
-            if(conflictManager.resolve('preventDelete', this, node))
-              placeNode(node)
-          } else if(onTreeDeletion && (collection = this.containsMatches(node)).length > 0) {
-            collection = collection.filter((n) => conflictManager.resolve('preventDelete', this, n))
-            if(collection.length > 0) {
-              switch(onTreeDeletion) {
-                case 'place-at-top-level':
-                  collection.forEach((n) => {
-                    placeNode(n)
-                  })
-                  break
-                case 'recreate-full-tree':
-                  placeNode(node)
-                  break
-                case 'recreate-direct-path':
-                  const preserve = (node) => collection.some((el) => node.contains(el))
-                  const final = (node) => collection.some((el) => node.isSameNode(el))
-                  walk(node, (node) => {
-                    if (final(node)) return true
-                    if (!preserve(node)) {
-                      node.remove()
-                      return true
-                    }
-                  })
-                  placeNode(node)
-                  break
-              }
+          if (this.matches(node)) { // Direct deletion
+            if (conflictManager.resolve('preventDelete', this, node)) { placeNode(node) }
+          } else if (
+            onTreeDeletion &&
+            (collection = this.containsMatches(node).filter((n) => conflictManager.resolve('preventDelete', this, n))).length > 0
+          ) {
+            switch (onTreeDeletion) {
+              case 'place-at-top-level':
+                collection.forEach((n) => {
+                  placeNode(n)
+                })
+                break
+              case 'recreate-full-tree':
+                placeNode(node)
+                break
+              case 'recreate-direct-path':
+                const preserve = (node) => collection.some((el) => node.contains(el))
+                const final = (node) => collection.some((el) => node.isSameNode(el))
+                walk(node, (node) => {
+                  if (final(node)) return true
+                  if (!preserve(node)) {
+                    node.remove()
+                    return true
+                  }
+                })
+                placeNode(node)
+                break
             }
           }
         })
