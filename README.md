@@ -6,7 +6,7 @@
 
 - [Install](#install)
 - [Usage](#usage)
-- [API](./wiki)
+- [API](https://github.com/czycha/nilbog/wiki)
 - [Name](#name)
 - [See also](#see-also)
 - [License](#license)
@@ -44,7 +44,7 @@ _View the [test folder](./test/) for working examples._
 
 ## API
 
-See the [Wiki](./wiki) for the complete API.
+See the [Wiki](https://github.com/czycha/nilbog/wiki) for the complete API.
 
 ## Name
 
