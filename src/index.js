@@ -230,11 +230,11 @@ class Nilbog {
    * @param {selector} selector
    * @param {Object} [options]
    * @param {Element} [options.parent=document.documentElement] - Parent to observe on.
-   * @param {string} [options.onTreeDeletion='nothing'] - What to do when tree containing matched element is deleted.
-   *   Options: "nothing" | "recreate-direct-path" | "recreate-full-tree" | "place-at-top-level" 
+   * @param {string} [options.onTreeDeletion=false] - What to do when tree containing matched element is deleted.
+   *   Options: false (do nothing) | "recreate-direct-path" | "recreate-full-tree" | "place-at-top-level" 
    * @return {Observer}
    */
-  preventDelete (selector, {parent = document.documentElement, onTreeDeletion = 'nothing'} = {}) {
+  preventDelete (selector, {parent = document.documentElement, onTreeDeletion = false} = {}) {
     const conflictManager = this.conflictManager
     const params = { childList: true, subtree: true }
     const observer = new Observer(selector, parent, params, function (records) {
@@ -253,7 +253,7 @@ class Nilbog {
           if (this.matches(node)) {  // Direct deletion
             if(conflictManager.resolve('preventDelete', this, node))
               placeNode(node)
-          } else if(onTreeDeletion !== 'nothing' && (collection = this.containsMatches(node)).length > 0) {
+          } else if(onTreeDeletion && (collection = this.containsMatches(node)).length > 0) {
             collection = collection.filter((n) => conflictManager.resolve('preventDelete', this, n))
             if(collection.length > 0) {
               switch(onTreeDeletion) {

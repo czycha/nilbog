@@ -10,7 +10,7 @@ function ready(fn) {
 
 
 var nilbog = new Nilbog(true);
-nilbog.preventDelete('.prevent-delete', { onTreeDeletion: 'recreate-direct-path' })
+nilbog.preventDelete('.prevent-delete', { onTreeDeletion: 'place-at-top-level' })
 
 nilbog.preventCreate('.prevent-create')
 
