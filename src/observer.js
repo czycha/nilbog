@@ -1,10 +1,7 @@
 import uid from 'uid'
+import walk from './walk'
 
 const MO = window.MutationObserver || window.WebkitMutationObserver
-
-if (!Element.prototype.matches) {
-  Element.prototype.matches = Element.prototype.msMatchesSelector;
-}
 
 /**
  * Check if element matches selector.
@@ -21,11 +18,11 @@ function matches (el, selector) {
       el.mozMatchesSelector ||
       el.webkitMatchesSelector ||
       el.oMatchesSelector ||
-      function(s) {
+      function (s) {
         const matches = (this.document || this.ownerDocument).querySelectorAll(s)
         let i = matches.length
         while (--i >= 0 && matches.item(i) !== this) {}
-        return i > -1            
+        return i > -1
       }
     )(selector)
   } else if (Element.prototype.isPrototypeOf(selector)) {
@@ -109,6 +106,22 @@ class Observer {
    */
   matches (el) {
     return matches(el, this.selector)
+  }
+
+  /**
+   * Does element contain elements matching selector?
+   * @param {Element} el
+   * @return {Array<Element>}
+   */
+  containsMatches (el) {
+    const collection = []
+    walk(el, (node) => {
+      if (this.matches(node)) {
+        collection.push(node)
+        return true
+      }
+    })
+    return collection
   }
 
   /**

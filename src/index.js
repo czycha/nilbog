@@ -1,6 +1,7 @@
 import Observer from './observer'
 import ConflictManager from './conflicts'
 import Referee from './referee'
+import walk from './walk'
 
 /**
  * @typedef {Object} VennDiagram - Inclusive and exclusive elements between two arrays.
@@ -229,21 +230,54 @@ class Nilbog {
    * @param {selector} selector
    * @param {Object} [options]
    * @param {Element} [options.parent=document.documentElement] - Parent to observe on.
+   * @param {string} [options.onTreeDeletion='nothing'] - What to do when tree containing matched element is deleted.
+   *   Options: "nothing" | "recreate-direct-path" | "recreate-full-tree" | "place-at-top-level" 
    * @return {Observer}
    */
-  preventDelete (selector, {parent = document.documentElement} = {}) {
+  preventDelete (selector, {parent = document.documentElement, onTreeDeletion = 'nothing'} = {}) {
     const conflictManager = this.conflictManager
     const params = { childList: true, subtree: true }
     const observer = new Observer(selector, parent, params, function (records) {
       records.forEach(({ removedNodes, target, nextSibling, previousSibling }) => {
+        const placeNode = (node) => {
+          if (!nextSibling && !previousSibling) {
+            target.appendChild(node)
+          } else if (nextSibling) {
+            target.insertBefore(node, nextSibling)
+          } else if (previousSibling) {
+            previousSibling.insertAdjacentHTML('beforebegin', node)
+          }
+        }
         removedNodes.forEach((node) => {
-          if (this.matches(node) && conflictManager.resolve('preventDelete', this, node)) {
-            if (!nextSibling && !previousSibling) {
-              target.appendChild(node)
-            } else if (nextSibling) {
-              target.insertBefore(node, nextSibling)
-            } else if (previousSibling) {
-              previousSibling.insertAdjacentHTML('beforebegin', node)
+          let collection
+          if (this.matches(node)) {  // Direct deletion
+            if(conflictManager.resolve('preventDelete', this, node))
+              placeNode(node)
+          } else if(onTreeDeletion !== 'nothing' && (collection = this.containsMatches(node)).length > 0) {
+            collection = collection.filter((n) => conflictManager.resolve('preventDelete', this, n))
+            if(collection.length > 0) {
+              switch(onTreeDeletion) {
+                case 'place-at-top-level':
+                  collection.forEach((n) => {
+                    placeNode(n)
+                  })
+                  break
+                case 'recreate-full-tree':
+                  placeNode(node)
+                  break
+                case 'recreate-direct-path':
+                  const preserve = (node) => collection.some((el) => node.contains(el))
+                  const final = (node) => collection.some((el) => node.isSameNode(el))
+                  walk(node, (node) => {
+                    if (final(node)) return true
+                    if (!preserve(node)) {
+                      node.remove()
+                      return true
+                    }
+                  })
+                  placeNode(node)
+                  break
+              }
             }
           }
         })

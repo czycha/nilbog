@@ -44,6 +44,8 @@
     "uid": "^0.0.2"
   },
   "jest": {
-    "testMatch": ["**/test/*.test.js"]
+    "testMatch": [
+      "**/test/*.test.js"
+    ]
   }
 }
