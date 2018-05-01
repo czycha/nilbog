@@ -66,7 +66,7 @@ Or, use [nilbog.min.js](browser/nilbog.min.js):
 ```
 
 **Note on script placement:** If the script where you define Nilbog observers executes before element rendering, the following side-effects may occur depending on the type of observers:
-  - `preventCreate` will not allow any subsequent nodes from rendering, even if they were originally on the page. (This may actually be to your advantage if you'd like to employ this sort of behavior.)
+  - `preventCreate` will not allow any subsequent matching nodes from rendering, even if they were originally on the page. (This may actually be to your advantage if you'd like to employ this sort of behavior.)
   - `protectText` will prevent protected elements from having any inner text, due to the element originally having no text as it renders it's full tree.
 
 ## Browser compatibility
