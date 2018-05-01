@@ -20,7 +20,7 @@ gulp.task('babel', () => (
 ))
 
 gulp.task('webpack', () => (
-  gulp.src('test/browser.js')
+  gulp.src('test/browser/js/browser.js')
     .pipe(gulpWebpack({
       output: {
         filename: 'browser.min.js'
@@ -28,7 +28,7 @@ gulp.task('webpack', () => (
       mode: 'production',
       devtool: 'source-map'
     }, webpack))
-    .pipe(gulp.dest('test'))
+    .pipe(gulp.dest('test/browser/js'))
 ))
 
 gulp.task('js:prod', gulp.series(['lint', 'babel']))
@@ -40,7 +40,7 @@ gulp.task('babel:watch', () => (
 gulp.task('js:dev', gulp.series(['babel', 'webpack']))
 
 gulp.task('webpack:watch', () => (
-  gulp.watch(['test/browser.js', 'dist/**/*.js'], gulp.series('webpack'))
+  gulp.watch(['test/browser/js/browser.js', 'dist/**/*.js'], gulp.series('webpack'))
 ))
 
 gulp.task('js:dev:watch', gulp.parallel('babel:watch', 'webpack:watch'))
