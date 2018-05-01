@@ -9,6 +9,7 @@ function walk (nodes, cb) {
   nodes = slice.call(nodes)
   while (nodes.length) {
     const node = nodes.shift()
+    if(!node) continue
     const ret = cb(node)
     if (ret === undefined && node.childNodes && node.childNodes.length) {
       nodes = slice.call(node.childNodes).concat(nodes)
