@@ -18,7 +18,7 @@
     "build": "gulp js:prod",
     "watch": "gulp",
     "lint": "eslint --fix src test ./*.js",
-    "clean": "rimraf dist/ docs/",
+    "clean": "rimraf dist/ docs/ browser/",
     "docs": "rimraf docs/ && npm run lint && jsdoc -d docs -r src/ -R README.md --verbose",
     "test": "jest",
     "prepack": "npm run clean && npm run build",
