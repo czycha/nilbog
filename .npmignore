@@ -1,6 +1,7 @@
 test/
 docs/
 Gulpfile.babel.js
+jest-puppeteer.config.js
 .*
 *.log
 src/

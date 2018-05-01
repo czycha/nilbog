@@ -7,6 +7,12 @@
   "author": "czycha",
   "license": "MIT",
   "private": false,
+  "keywords": [
+    "mutationobserver",
+    "mutation observer",
+    "dom",
+    "freeze"
+  ],
   "scripts": {
     "build": "gulp js:prod",
     "watch": "gulp",
