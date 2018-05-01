@@ -2,10 +2,14 @@
 
 > MutationObserver shortcuts to prevent certain actions on nodes.
 
+Nilbog will reverse certain actions taken on nodes, preserving an original state. Currently, Nilbog can prevent creation and deletion, as well as protect the text, attributes, and classes of nodes.
+
 ## Table of contents
 
 - [Install](#install)
 - [Usage](#usage)
+  - [Adding to page](#adding-to-page)
+- [Browser compatibility](#browser-compatibility)
 - [API](https://github.com/czycha/nilbog/wiki)
 - [Name](#name)
 - [See also](#see-also)
@@ -60,6 +64,16 @@ Or, use [nilbog.min.js](browser/nilbog.min.js):
   var nilbog = new Nilbog()
 </script>
 ```
+
+**Note on script placement:** If the script where you define Nilbog observers executes before element rendering, the following side-effects may occur depending on the type of observers:
+  - `preventCreate` will not allow any subsequent nodes from rendering, even if they were originally on the page. (This may actually be to your advantage if you'd like to employ this sort of behavior.)
+  - `protectText` will prevent protected elements from having any inner text, due to the element originally having no text as it renders it's full tree.
+
+## Browser compatibility
+
+Nilbog is based entirely on the `MutationObserver` native class (including the prefixed `WebkitMutationObserver`). If this class is [not present](https://caniuse.com/#feat=mutationobserver), Nilbog will not work at all.
+
+Nilbog is written in ES6 which is transpiled using Babel. It does not include polyfills for some ES6 features that are not handled by Babel, such as `Array.from`, `Array.prototype.filter`, etc. because this could add unnecessary bloat and logic in case these features are already polyfilled. This affects only unsupported browsers such as IE <= 11. If you intend to support such browsers, I suggest using [polyfill.io](https://polyfill.io/) or [core-js](https://github.com/zloirock/core-js).
 
 ## API
 
