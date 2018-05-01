@@ -25,11 +25,11 @@ Or, with [Yarn](https://yarnpkg.com/en/),
 $ yarn add nilbog
 ```
 
+Alternatively, download [nilbog.min.js](browser/nilbog.min.js)
+
 ## Usage
 
 ```js
-import Nilbog from 'nilbog'
-
 const nilbog = new Nilbog()
 
 nilbog.preventCreate('.prevent-create')
@@ -41,6 +41,25 @@ nilbog.freeze('#freeze')
 ```
 
 _View the [test folder](./test/) for working examples._
+
+### Adding to page
+
+Import directly into your JavaScript (for use with tools like Webpack, Browserify, and Parcel):
+
+```js
+import Nilbog from 'nilbog'
+
+const nilbog = new Nilbog()
+```
+
+Or, use [nilbog.min.js](browser/nilbog.min.js):
+
+```html
+<script type="text/javascript" src="js/nilbog.min.js"></script>
+<script type="text/javascript">
+  var nilbog = new Nilbog()
+</script>
+```
 
 ## API
 

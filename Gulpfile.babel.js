@@ -19,30 +19,39 @@ gulp.task('babel', () => (
     .pipe(gulp.dest('dist'))
 ))
 
-gulp.task('webpack', () => (
-  gulp.src('test/browser/js/browser.js')
-    .pipe(gulpWebpack({
-      output: {
-        filename: 'browser.min.js'
-      },
-      mode: 'production',
-      devtool: 'source-map'
-    }, webpack))
+gulp.task('test', () => (
+  gulp.src('browser/nilbog.min.js')
     .pipe(gulp.dest('test/browser/js'))
 ))
 
-gulp.task('js:prod', gulp.series(['lint', 'babel']))
+gulp.task('webpack', () => (
+  gulp.src('dist/index.js')
+    .pipe(gulpWebpack({
+      output: {
+        filename: 'nilbog.min.js',
+        library: 'Nilbog'
+      },
+      mode: 'production'
+    }, webpack))
+    .pipe(gulp.dest('browser'))
+))
+
+gulp.task('js:prod', gulp.series(['lint', 'babel', 'webpack']))
 
 gulp.task('babel:watch', () => (
   gulp.watch('src/**/*.js', gulp.series('babel'))
 ))
 
-gulp.task('js:dev', gulp.series(['babel', 'webpack']))
+gulp.task('js:dev', gulp.series(['babel', 'webpack', 'test']))
 
 gulp.task('webpack:watch', () => (
-  gulp.watch(['test/browser/js/browser.js', 'dist/**/*.js'], gulp.series('webpack'))
+  gulp.watch(['dist/**/*.js'], gulp.series('webpack'))
 ))
 
-gulp.task('js:dev:watch', gulp.parallel('babel:watch', 'webpack:watch'))
+gulp.task('test:watch', () => (
+  gulp.watch(['browser/nilbog.min.js'], gulp.series('test'))
+))
+
+gulp.task('js:dev:watch', gulp.parallel('babel:watch', 'webpack:watch', 'test:watch'))
 
 gulp.task('default', gulp.series(['js:dev:watch']))
