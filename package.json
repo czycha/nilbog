@@ -1,6 +1,6 @@
 {
   "name": "nilbog",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "MutationObserver shortcuts to prevent certain actions on nodes.",
   "main": "dist/index.js",
   "browser": "browser/nilbog.min.js",
@@ -72,5 +72,7 @@
       "**/test/**/*.test.js"
     ]
   },
-  "eslintIgnore": ["test/browser/**/*.js"]
+  "eslintIgnore": [
+    "test/browser/**/*.js"
+  ]
 }
