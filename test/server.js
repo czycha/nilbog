@@ -7,8 +7,8 @@ app.use(express.static(path.join(__dirname, 'browser')))
 
 let port = 4444
 const index = Math.max(process.argv.indexOf('--port'), process.argv.indexOf('-p'))
-if(index !== -1) {
-	port = +process.argv[index + 1] || port
+if (index !== -1) {
+  port = +process.argv[index + 1] || port
 }
 
 app.listen(port)

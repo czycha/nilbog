@@ -10,7 +10,7 @@
   "scripts": {
     "build": "gulp js:prod",
     "watch": "gulp",
-    "lint": "gulp lint",
+    "lint": "eslint --fix src test ./*.js",
     "clean": "rimraf dist/ docs/",
     "docs": "rimraf docs/ && npm run lint && jsdoc -d docs -r src/ -R README.md --verbose",
     "test": "jest",
@@ -29,6 +29,7 @@
     "eslint": "^4.19.1",
     "eslint-config-standard": "^11.0.0",
     "eslint-plugin-import": "^2.11.0",
+    "eslint-plugin-jest": "^21.15.1",
     "eslint-plugin-node": "^6.0.1",
     "eslint-plugin-promise": "^3.7.0",
     "eslint-plugin-standard": "^3.0.1",
@@ -63,5 +64,6 @@
     "testMatch": [
       "**/test/**/*.test.js"
     ]
-  }
+  },
+  "eslintIgnore": ["test/browser/**/*.js"]
 }

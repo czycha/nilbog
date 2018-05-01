@@ -1,8 +1,18 @@
 {
   "parser": "babel-eslint",
-  "extends": ["standard"],
+  "extends": ["standard", "plugin:jest/recommended"],
   "env": {
     "browser": true,
-    "node": true
+    "node": true,
+    "jest/globals": true
+  },
+  "plugins": ["jest"],
+  "globals": {
+    "$": false,
+    "page": false,
+    "nilbog": false,
+    "PATHS": false,
+    "navigate": false,
+    "unorderedMatch": false
   }
 }

@@ -50,7 +50,7 @@ function arrDiff (oldArr, newArr) {
  * @param {BinaryDiff} diff
  * @return {Array}
  */
-function revertDiff(arr, diff) {
+function revertDiff (arr, diff) {
   const temp = new Set(arr)
   diff.added.forEach((removeThis) => {
     temp.delete(removeThis)
@@ -67,10 +67,10 @@ function revertDiff(arr, diff) {
  * @param {Node} node - Node that's being placed
  * @param {?Node} nextSibling - Sibling after node, if any
  */
-function placeNode(target, node, nextSibling) {
-  if(nextSibling) {  // Has sibling after
+function placeNode (target, node, nextSibling) {
+  if (nextSibling) { // Has sibling after
     target.insertBefore(node, nextSibling)
-  } else {  // Either only or last child
+  } else { // Either only or last child
     target.appendChild(node)
   }
 }
@@ -148,7 +148,7 @@ class Nilbog {
           })
           fixed.push(target)
         }
-        if(type === 'childList' && (addedTextNodes.length > 0 || removedTextNodes.length > 0)) {
+        if (type === 'childList' && (addedTextNodes.length > 0 || removedTextNodes.length > 0)) {
           this.operate(() => {
             addedTextNodes.forEach((added) => added.remove())
             removedTextNodes.forEach((removed) => placeNode(target, removed, nextSibling))
@@ -249,7 +249,7 @@ class Nilbog {
     }
     const observer = new Observer(selector, parent, params, function (records) {
       const relevant = records.filter((record) => this.matches(record.target))
-      if(relevant.length === 0) return false
+      if (relevant.length === 0) return false
       let changedPrev
       relevant.forEach(({ attributeName, target, oldValue }) => {
         const newClasses = target.getAttribute('class').split(' ').filter(className => className !== '')
@@ -282,8 +282,7 @@ class Nilbog {
    * @return {Observer}
    */
   preventDelete (selector, {parent = document.documentElement, onTreeDeletion = false} = {}) {
-    if(![false, 'recreate-full-tree', 'recreate-direct-path', 'place-at-top-level'].includes(onTreeDeletion))
-      throw new TypeError('onTreeDeletion must be one of: [false, "recreate-full-tree", "recreate-full-tree", "place-at-top-level"]. Received: ' + onTreeDeletion)
+    if (![false, 'recreate-full-tree', 'recreate-direct-path', 'place-at-top-level'].includes(onTreeDeletion)) { throw new TypeError('onTreeDeletion must be one of: [false, "recreate-full-tree", "recreate-full-tree", "place-at-top-level"]. Received: ' + onTreeDeletion) }
     const conflictManager = this.conflictManager
     const params = { childList: true, subtree: true }
     const observer = new Observer(selector, parent, params, function (records) {
