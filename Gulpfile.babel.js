@@ -25,13 +25,27 @@ gulp.task('test', () => (
 ))
 
 gulp.task('webpack', () => (
-  gulp.src('dist/index.js')
+  gulp.src('src/index.js')
     .pipe(gulpWebpack({
       output: {
         filename: 'nilbog.min.js',
         library: 'Nilbog'
       },
-      mode: 'production'
+      mode: 'production',
+      module: {
+        rules: [
+          {
+            test: /\.js$/,
+            exclude: /(node_modules|bower_components)/,
+            use: {
+              loader: 'babel-loader',
+              options: {
+                presets: ['env']
+              }
+            }
+          }
+        ]
+      }
     }, webpack))
     .pipe(gulp.dest('browser'))
 ))
@@ -45,7 +59,7 @@ gulp.task('babel:watch', () => (
 gulp.task('js:dev', gulp.series(['babel', 'webpack', 'test']))
 
 gulp.task('webpack:watch', () => (
-  gulp.watch(['dist/**/*.js'], gulp.series('webpack'))
+  gulp.watch(['src/**/*.js'], gulp.series('webpack'))
 ))
 
 gulp.task('test:watch', () => (
