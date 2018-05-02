@@ -1,4 +1,5 @@
 # Nilbog
+[![npm](https://img.shields.io/npm/v/nilbog.svg?style=flat-square)](https://npm.im/nilbog) [![npm](https://img.shields.io/npm/l/nilbog.svg?style=flat-square)](https://npm.im/nilbog) [![npm bundle size (minified + gzip)](https://img.shields.io/bundlephobia/minzip/nilbog.svg?style=flat-square)](https://npm.im/nilbog)
 
 > MutationObserver shortcuts to prevent certain actions on nodes.
 
@@ -9,6 +10,8 @@ Nilbog will reverse certain actions taken on nodes, preserving an original state
 - [Install](#install)
 - [Usage](#usage)
   - [Adding to page](#adding-to-page)
+    - [CDNs](#cdns)
+    - [Script placement](#script-placement)
 - [Browser compatibility](#browser-compatibility)
 - [API](https://github.com/czycha/nilbog/wiki)
 - [Name](#name)
@@ -56,7 +59,7 @@ import Nilbog from 'nilbog'
 const nilbog = new Nilbog()
 ```
 
-Or, use [nilbog.min.js](browser/nilbog.min.js):
+Download and use [nilbog.min.js](browser/nilbog.min.js)
 
 ```html
 <script type="text/javascript" src="js/nilbog.min.js"></script>
@@ -65,9 +68,28 @@ Or, use [nilbog.min.js](browser/nilbog.min.js):
 </script>
 ```
 
-**Note on script placement:** If the script where you define Nilbog observers executes before element rendering, the following side-effects may occur depending on the type of observers:
-  - `preventCreate` will not allow any subsequent matching nodes from rendering, even if they were originally on the page. (This may actually be to your advantage if you'd like to employ this sort of behavior.)
-  - `protectText` will prevent protected elements from having any inner text, due to the element originally having no text as it renders it's full tree.
+#### CDNs
+
+##### jsDelivr
+
+```html
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/nilbog@1.0.0/browser/nilbog.min.js"></script>
+```
+
+##### unpkg
+
+```html
+<script type="text/javascript" src="https://unpkg.com/nilbog@1.0.0/browser/nilbog.min.js"></script>
+```
+
+#### Script placement
+
+Browsers will load and execute JavaScript as it encounters it as it processes the HTML file unless the `script` tags have the `async` or `defer` attributes (see ["Understanding the Critical Rendering Path"](https://bitsofco.de/understanding-the-critical-rendering-path/#3runningjavascript) by Ire Aderinokun for more information). If Nilbog observers that watch for element creation are instantiated before the rest of document has been fully rendered, they will be fired as subsequent matching elements are rendered. This will generate the following side effects:
+
+- `preventCreate` will not allow any subsequent matching nodes from rendering, even if they were originally on the page. This may actually be to your advantage if you'd like to employ this sort of behavior.
+- `protectText` will prevent protected elements from having any inner text, due to the element originally having no text as it renders its full tree.
+
+To prevent this, place your scripts before the end of the `body` element or use the [`defer` attribute](https://bitsofco.de/async-vs-defer/#thedeferattribute) to tell the browser to execute the script once the page has been fully rendered.
 
 ## Browser compatibility
 
