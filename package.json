@@ -16,6 +16,7 @@
   ],
   "scripts": {
     "build": "gulp js:prod",
+    "build:dev": "gulp js:dev",
     "watch": "gulp",
     "lint": "eslint --fix src test ./*.js",
     "clean": "rimraf dist/ docs/ browser/",
@@ -23,6 +24,11 @@
     "test": "jest",
     "prepack": "npm run clean && npm run build",
     "serve": "node test/server.js"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint && npm run clean && npm run build:dev && npm test"
+    }
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
@@ -45,6 +51,7 @@
     "gulp-babel": "^7.0.1",
     "gulp-cli": "^2.0.1",
     "gulp-eslint": "^4.0.2",
+    "husky": "^1.0.0-rc.8",
     "jest": "^22.4.3",
     "jest-cli": "^22.4.3",
     "jest-puppeteer": "^2.4.0",
